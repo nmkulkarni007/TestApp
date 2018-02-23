@@ -9,27 +9,28 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { ActionCreators } from './src/actions'
-import Button from './src/models/Button';
+import MyButons from './src/models/Button';
+import SimpleTabs from './src/SimpleTabs';
 
 class AppContainer extends Component {
 
-    constructor(props) {
-        super(props);
-        this.state = {
-
-        }
+    componentDidMount() {
+        this.props.fetchActiveGame("Nikhil_Game_Id");
     }
+
 
     render() {
         return (
-            <Button {...this.props} />
+            <View>
+                <MyButons  {...this.props} />
+            </View>
         )
     }
 }
 
 function mapStateToProps(state) {
     return {
-        container: state,
+        currentInnings: state.currentInnings.innings
     };
 }
 

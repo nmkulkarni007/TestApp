@@ -10,6 +10,7 @@ import thunk from 'redux-thunk'
 import reducer from './src/reducers';
 
 import AppContainer from './appContainer';
+import Tabs from './App';
 
 const loggerMiddleware = createLogger({ predicate: (getState, action) => __DEV__ });
 

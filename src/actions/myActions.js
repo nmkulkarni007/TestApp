@@ -1,52 +1,123 @@
+import { SCORE_INNINGS } from './types';
+import { ON_STRIKE, FOUR, ONE, LEGALBALLS, RUNS_SCORED } from '../Constsnts';
 
-import * as types from './types';
-import { TEST_ACTION_SUCCESS } from './types';
-var Datastore = require('react-native-local-mongodb')
-var db = new Datastore({ filename: 'asyncStorageKey', autoload: true });
+import db from '../lib/db';
 
-export const myAction = () => {
+
+export function fetchActiveGame(_gameId) {
     return function (dispatch) {
-        dispatch(loading());
-        
-        return fetch('https://facebook.github.io/react-native/movies.json')
-            .then((response) => response.json())
-            .then((responseJson) => { dispatch(createGame(responseJson.movies)); })
-            .catch((error) => { console.error(error);
-            });
+        // Find all documents in the collection
+        db.findOne({ gameId: _gameId }, function (err, payload) {
+            dispatch(startInningsAction(payload));
+        });
     }
 }
 
-export const loading = () => {
-    return {
-        type: types.TEST_ACTION_LOADING,       
-    };
+export function startInnings(gameId, onStrike, nonStrike) {
+
+    return function (dispatch) {
+         let inningsPayload = {
+            gameId: gameId,
+            onStrike: onStrike,
+            nonStrike: nonStrike,
+            bowler: null,
+            totalScore: 0,
+            overs: 0,
+            wickets: [],
+            overs: [],
+            currentOver: null
+        };
+        // Find all documents in the collection
+        db.insert(inningsPayload, function (err, payload) {
+            dispatch(startInningsAction(payload));
+        });
+    }
 };
 
-export const createGame = (json) => {
+function startInningsAction(payload) {
     return {
-        type: types.TEST_ACTION,
-        json
+        type: SCORE_INNINGS,
+        payload
     };
-};
+}
 
-export const fireBaseTest = (text) => {
+export function startNewOver(innings, bowler, currentBallScore) {
 
-    return {
-        type: types.TEST_FIREBASE,
-        text
-    };
-};
+    let _gameId = innings.gameId;
+    let onStrike = innings.onStrike;
+    let nonStrike = innings.nonStrike;
 
-export function addMessage(text) {
+    let currentOver = innings.currentOver;
+    let isOverCompleted = currentOver.legalDeliveries == 6 ? true : false;
+
+    if (isOverCompleted) {
+        let totalOvers = Array.from(innings.overs);
+        totalOvers.push(currentOver);
+
+        db.update({ gameId: _gameId }, { $set: { overs: totalOvers } },
+            function (err, numReplaced) {
+            dispatch(fetchActiveGame(_gameId));
+        });
+    }
+
+    var payload = createNewOver(onStrike, bowler);
+
+    if (!isOverCompleted && currentOver && currentBallScore) {
+
+        let balls = Array.from(currentOver.deliveries);
+        let currentBall = updateScoreAction(onStrike, currentBallScore, currentOver);
+        
+        balls.push(currentBall);
+        currentOver.deliveries = balls;
+        
+        payload = currentOver;
+    }
     
     return function (dispatch) {
-        // Find all documents in the collection 
-        db.find({}, function (err, docs) {
-            dispatch(fireBaseTest(docs));
+        
+        db.update({ gameId: _gameId }, { $set: { currentOver: payload } }, function (err, numReplaced) {
+            dispatch(fetchActiveGame(_gameId));
         });
         
     }
+}
 
-   
+function createNewOver(onStrike, bowler) {
 
-};
+    let payload = {
+        "onStrike": onStrike,
+        "bowler": bowler,
+        legalDeliveries: 0,
+        deliveries: []
+    }
+
+    return payload;
+}
+
+function updateScoreAction(onStrike, score, currentOver) {
+
+    let currentBall = {
+        "onStrike": onStrike,
+        RUNS_SCORED: score,
+    }
+
+    let legalBall = currentOver.legalDeliveries;
+
+
+    switch (score) {
+        case '4':
+            currentBall.FOUR = 1;
+            currentOver.legalDeliveries = legalBall + 1;
+
+            break;
+
+        case ONE:
+            break;
+
+        default:
+            break;
+    }
+
+    return currentBall;
+}
+

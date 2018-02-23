@@ -1,12 +1,13 @@
 import createreducer from "../lib/createreducer";
 import * as types from '../actions/types';
+
 import createReducer from "../lib/createreducer";
 
-export const addedTeam = createreducer({}, {
-    [types.TEST_FIREBASE](state, action) {
+export const currentInnings = createreducer({}, {
+    [types.SCORE_INNINGS](state, action) {
         return {
             ...state,
-            team: action.text
+            innings: action.payload
         }
     }
 });

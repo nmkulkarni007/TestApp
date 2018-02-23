@@ -1,9 +1,3 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * @flow
- */
-
 import React, { Component } from 'react';
 import {
   Platform,
@@ -11,58 +5,71 @@ import {
   Text,
   View,
   TextInput,
-  TouchableHighlight
+  TouchableHighlight,
 } from 'react-native';
 
-export default class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      realm: null
-    };
-  }
+import { TabNavigator, StackNavigator } from 'react-navigation';
+import { Icon, Divider } from 'react-native-elements';
 
-  componentWillMount() {
-    
-    
-  }
+const Feed = () => (
+  <View>
+  <Text style={{ paddingTop: 100 }}>This is Feed</Text>
+  
+    <Divider style={{ backgroundColor: 'blue' }} />
+  </View>  
 
-  render() {
-    
-    
-    return (
-      <View style = {styles.container}>
-        <Text style={styles.welcome}>
-          {info}
-        </Text>
+);
 
-        <TextInput placeholder={"This is text"} />
-        <TouchableHighlight onPress={() => {
-          
-        }}>
-          <Text>Save to Firebase</Text>
-        </TouchableHighlight>
-        
-    </View>
-    );
-  }
-}
+const UserDetail = () => (
+  <Text style={{ paddingTop: 100 }}>This is Feed</Text>
+);
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+export const FeedStack = StackNavigator({
+  Feed: {
+    screen: Feed,
+    navigationOptions: {
+      headerMode: 'none',
+    },
   },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
+  Details: {
+    screen: UserDetail,
+    navigationOptions: ({ navigation }) => ({
+      title: `${navigation.state.params.name.first.toUpperCase()} ${navigation.state.params.name.last.toUpperCase()}`,
+    }),
   },
 });
+
+export default Tabs = TabNavigator({
+  Feed: {
+    screen: FeedStack,
+    navigationOptions: {
+      tabBarLabel: 'Feed',
+      tabBarIcon: ({ tintColor }) =>
+        <Icon name="activity" size={30} color={tintColor} />,
+    },
+  },
+}, {
+    lazyLoad: true,
+    animationEnabled: false,
+    headerMode: 'none',
+    tabBarOptions: {
+      headerMode: 'none',
+      activeTintColor: '#3b5998',
+      inactiveTintColor: '#cccccc',
+      showIcon: true,
+      showLabel: false,
+      iconStyle: {
+        width: 35,
+        height: 30
+      },
+      
+      style: {
+        backgroundColor: 'white'
+      },
+      headerMode: 'none',
+      pressColor: '#d5dcea',
+      indicatorStyle: {
+        backgroundColor: 'white'
+      }
+    }
+  });
